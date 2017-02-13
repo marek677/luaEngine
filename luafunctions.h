@@ -24,3 +24,8 @@ extern "C"
 #endif
 int Luafunc_setglobalint(lua_State* L);
 
+#ifdef __cplusplus
+extern "C"
+#endif
+int LuaExecute_delayed(lua_State* L);
+

@@ -1,6 +1,9 @@
+#include <cstdio>
+#include <windows.h> //Sleep function...
 #include "luafunctions.h"
+#include "tinythread.h"
 
-
+using namespace tthread;
 int Lua_globals[0x1000] = {0}; // have some memory for lua global values.
 #ifdef __cplusplus
 extern "C"
@@ -25,6 +28,24 @@ int Luafunc_howdy(lua_State* state)
 
   // Let Lua know how many return values we've passed
   return 1;
+}
+#ifdef __cplusplus
+extern "C"
+#endif
+int LuaExecute_delayed(lua_State* state)
+{
+	int delay = lua_tointeger(state, 1);
+	char* funcname = (char*) lua_tostring(state, 2);
+	int args = lua_gettop(state);
+	printf("[C] Calling function:%s with a delay of %d ms\n",funcname,delay);
+	lua_getglobal(state, funcname); // get the function!
+	for ( int n=3; n<=args; ++n) {
+		printf("\targument %d: '%s'\n", n-2, lua_tostring(state, n));
+		lua_pushvalue (state, n);
+	}
+	Sleep(delay);
+	lua_call(state, args-2, 0);
+	return 0;
 }
 #ifdef __cplusplus
 extern "C"

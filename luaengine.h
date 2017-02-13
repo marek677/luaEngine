@@ -8,6 +8,7 @@
 	#include <lauxlib.h>
 	#include <stdio.h>
 #endif
+#include <stdarg.h>
 
 class LuaEngine
 {
@@ -15,7 +16,7 @@ class LuaEngine
 		LuaEngine();
 		~LuaEngine();
 		int loadfile(const char* filename);
-		int executefunction(const char* funcname);
+		int executefunction (const char *func, const char *sig, ...);
 	private:
 		lua_State *L;
 };

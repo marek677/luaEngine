@@ -15,6 +15,7 @@ LuaEngine::LuaEngine()
 	// Make standard libraries available in the Lua object
 	luaL_openlibs(this->L);
 	// Load C functions
+	lua_register(this->L, "executeDelayed", LuaExecute_delayed);
 	lua_register(this->L, "howdy", Luafunc_howdy);
 	lua_register(this->L, "getglobal", Luafunc_getglobalint);
 	lua_register(this->L, "setglobal", Luafunc_setglobalint);
@@ -27,15 +28,12 @@ int LuaEngine::loadfile(const char* filename)
 {
 	// Load the program; this supports both source code and bytecode files.
 	int result = luaL_loadfile(this->L, filename);
-
 	if ( result != LUA_OK ) {
 		print_error(this->L);
 		return 1;
 	}
-
 	// Finally, execute the program by calling into it.
 	// Change the arguments if you're not running vanilla Lua code.
-
 	result = lua_pcall(this->L, 0, LUA_MULTRET, 0);
 
 	if ( result != LUA_OK ) {
@@ -44,14 +42,44 @@ int LuaEngine::loadfile(const char* filename)
 	}
 	return result;
 }
-int LuaEngine::executefunction(const char* funcname)
-{
-	//After calling global file - call the start function!
-	lua_getglobal(this->L, "start");
-	lua_pushnumber(this->L, 1);
-	lua_pushnumber(this->L, 2);
-	lua_call(this->L, 2, 1); // Calling the function!
-	int start_result  = (int)lua_tointeger(this->L, -1);
+// Func stolen from: https://www.lua.org/pil/25.3.html
+int LuaEngine::executefunction (const char *func, const char *sig, ...) {
+	va_list vl;
+	int narg = 0;  /* number of arguments*/
+
+	va_start(vl, sig);
+	lua_getglobal(L, func);  /* get function */
+
+	/* push arguments */
+	while (*sig) {  /* push arguments */
+		switch (*sig++) {
+
+		case 'd':  /* double argument */
+			lua_pushnumber(L, va_arg(vl, double));
+		break;
+
+		case 'i':  /* int argument */
+			lua_pushnumber(L, va_arg(vl, int));
+		break;
+
+		case 's':  /* string argument */
+			lua_pushstring(L, va_arg(vl, char *));
+		break;
+
+		case 'l':  /* lightuserdata argument */
+			lua_pushlightuserdata(L, va_arg(vl, void *));
+		break;
+
+		default:
+			printf("Luaengine invalid option (%c)\n", *(sig - 1));
+		}
+		narg++;
+		luaL_checkstack(L, 1, "too many arguments");
+	}
+
+	/* do the call */
+	int start_result = lua_pcall(L, narg, 1, 0);
+	
 	//Error checks  - just put return LUA_OK at the end of the function
 	if ( start_result != LUA_OK ) {
 		print_error(this->L);
@@ -59,5 +87,6 @@ int LuaEngine::executefunction(const char* funcname)
 	}
 	lua_pop(this->L, 1);
 	printf("[C] Lua Start function returned: %d\n",start_result); // should be LUA_OK = 0
+	va_end(vl);
 	return start_result;
 }

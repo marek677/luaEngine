@@ -2,10 +2,11 @@
 Resources:
 https://csl.name/post/lua-and-cpp/ - basic thingy
 http://gamedevgeek.com/tutorials/calling-lua-functions/ - calling a lua function from C++
+https://www.lua.org/pil/25.3.html - better calling convencion
 */
 
 //Compiler: g++ from mingW package
-//g++ main.cpp luafunctions.cpp luaengine.cpp -llua53
+//g++ main.cpp luafunctions.cpp luaengine.cpp tinythread.cpp -llua53
 //using lua 5.3
 
 #ifdef __cplusplus
@@ -28,7 +29,7 @@ void execute(const char* filename)
 		printf("Could not load file: %s\n",filename);
 		return;
 	}
-	if(e->executefunction("start")!=LUA_OK)
+	if(e->executefunction("start","ii",1,2)!=LUA_OK)
 	{
 		printf("Problem executing start function\n");
 		return;

@@ -6,7 +6,7 @@ https://www.lua.org/pil/25.3.html - better calling convencion
 */
 
 //Compiler: g++ from mingW package
-//g++ main.cpp luafunctions.cpp luaengine.cpp tinythread.cpp -llua53
+//g++ main.cpp luafunctions.cpp tinythread.cpp luascheduler.cpp luaengine.cpp -llua53
 //using lua 5.3
 
 #ifdef __cplusplus
@@ -18,23 +18,15 @@ https://www.lua.org/pil/25.3.html - better calling convencion
 	#include <lauxlib.h>
 	#include <stdio.h>
 #endif
+#include <ctime>
+#include "luascheduler.h"
 
-#include "luaengine.h"
+using namespace std;
 
+LuaScheduler* s = new LuaScheduler();
 void execute(const char* filename)
 {
-	LuaEngine* e = new LuaEngine();
-	if(e->loadfile(filename)!=LUA_OK)
-	{
-		printf("Could not load file: %s\n",filename);
-		return;
-	}
-	if(e->executefunction("start","ii",1,2)!=LUA_OK)
-	{
-		printf("Problem executing start function\n");
-		return;
-	}
-	printf("LuaEngine class- everything works okay.");
+	s->executefunction(1, (char*)filename, (char*)"start", (char*)"is",1,"asdf");
 }
 int main(int argc, char** argv)
 {
@@ -43,11 +35,16 @@ int main(int argc, char** argv)
     puts("Loads and executes Lua programs.");
     return 1;
   }
-
+  clock_t begin = clock();
+  
   // Execute all programs on the command line
   for ( int n=1; n<argc; ++n ) {
-    execute(argv[n]);
+	for(int i=0;i<200;i++)  
+		execute(argv[n]);
+	
   }
-
+  clock_t end = clock();
+  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+  printf("\n\nTIME: %f",elapsed_secs);
   return 0;
 }

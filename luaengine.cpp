@@ -42,14 +42,11 @@ int LuaEngine::loadfile(const char* filename)
 	}
 	return result;
 }
-// Func stolen from: https://www.lua.org/pil/25.3.html
-int LuaEngine::executefunction (const char *func, const char *sig, ...) {
-	va_list vl;
+// Proof of concept stolen from: https://www.lua.org/pil/25.3.html 
+void LuaEngine::preparefunction (const char *func, const char *sig, va_list vl) {
 	int narg = 0;  /* number of arguments*/
-
-	va_start(vl, sig);
 	lua_getglobal(L, func);  /* get function */
-
+	int intvalue;
 	/* push arguments */
 	while (*sig) {  /* push arguments */
 		switch (*sig++) {
@@ -59,7 +56,9 @@ int LuaEngine::executefunction (const char *func, const char *sig, ...) {
 		break;
 
 		case 'i':  /* int argument */
-			lua_pushnumber(L, va_arg(vl, int));
+			intvalue = va_arg(vl, int);
+			printf("Pushing int value of: %d\n",intvalue);
+			lua_pushnumber(L, intvalue);
 		break;
 
 		case 's':  /* string argument */
@@ -77,16 +76,19 @@ int LuaEngine::executefunction (const char *func, const char *sig, ...) {
 		luaL_checkstack(L, 1, "too many arguments");
 	}
 
+	this->narg = narg;
+}
+int LuaEngine::executefunction()
+{
 	/* do the call */
 	int start_result = lua_pcall(L, narg, 1, 0);
 	
 	//Error checks  - just put return LUA_OK at the end of the function
 	if ( start_result != LUA_OK ) {
 		print_error(this->L);
-		return start_result;
 	}
-	lua_pop(this->L, 1);
+	//lua_pop(this->L, 1);
+	lua_settop(this->L,0); //Safety - make sure the stack is 0, in case something went wrong.
 	printf("[C] Lua Start function returned: %d\n",start_result); // should be LUA_OK = 0
-	va_end(vl);
 	return start_result;
 }

@@ -16,7 +16,9 @@ class LuaEngine
 		LuaEngine();
 		~LuaEngine();
 		int loadfile(const char* filename);
-		int executefunction (const char *func, const char *sig, ...);
+		void preparefunction (const char *func, const char *sig, va_list vl);
+		int executefunction();
 	private:
 		lua_State *L;
+		int narg;
 };

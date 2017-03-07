@@ -7,6 +7,8 @@ https://www.lua.org/pil/25.3.html - better calling convencion
 
 //Compiler: g++ from mingW package
 //g++ main.cpp luafunctions.cpp tinythread.cpp luascheduler.cpp luaengine.cpp -llua53
+//Compiler: g++ on Linux Kali
+//g++ main.cpp luafunctions.cpp tinythread.cpp luascheduler.cpp luaengine.cpp -llua5.3 -lpthread -I/usr/include/lua5.3
 //using lua 5.3
 
 #ifdef __cplusplus
@@ -24,7 +26,6 @@ https://www.lua.org/pil/25.3.html - better calling convencion
 using namespace std;
 
 LuaScheduler* ls = new LuaScheduler();
-TriggerScheduler* ts = new TriggerScheduler(ls);
 double TestScheduler(bool newthread)
 {
 	clock_t begin = clock();
@@ -36,6 +37,7 @@ double TestScheduler(bool newthread)
 }
 double TestTrigger()
 {
+	TriggerScheduler* ts = ls->getTriggerScheduler();
 	clock_t begin = clock();
 	bool part1 = false;
 	bool part2 = false;
@@ -58,14 +60,25 @@ double TestTrigger()
 	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 	return elapsed_secs;
 }
+void test4()
+{
+	TimerScheduler* ts = ls->getTimerScheduler();
+	ts->AddEvent((char*)"script.lua",(char*)"timerfunc",1000);
+	Sleep(1000*10);
+	ts->RemoveEvent((char*)"script.lua",(char*)"timerfunc",1000);
+	printf("No more events after this!");
+	Sleep(10000);
+}
 int main(int argc, char** argv)
 {
+  /*
   double test1 = TestScheduler(0); //Single Threaded
   double test2 = TestScheduler(1); //Multi Threaded
   double test3 = TestTrigger(); //Trigger Test
   printf("\n\n");
   printf("TEST1 - TIME: %f\n",test1);
   printf("TEST2 - TIME: %f\n",test2);
-  printf("TEST3 - TIME: %f\n",test3);
+  printf("TEST3 - TIME: %f\n",test3);*/
+  test4();
   return 0;
 }

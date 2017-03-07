@@ -1,7 +1,8 @@
 #include <cstdio>
-#include <windows.h> //Sleep function...
 #include "luafunctions.h"
 #include "tinythread.h"
+#include "sleep.h" // weird macro for sleep function
+
 
 using namespace tthread;
 int Lua_globals[0x1000] = {0}; // have some memory for lua global values.

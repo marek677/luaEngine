@@ -2,6 +2,7 @@
 #include <cstring>
 #include "luascheduler.h"
 #include "tinythread.h"
+#include "sleep.h"
 
 using namespace tthread;
 
